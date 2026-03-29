@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Voice Generator</title>
+</head>
+<body style="background:#0f172a; color:white; font-family:Arial; text-align:center; padding:40px;">
+
+<h2>🎙 AI Voice Generator</h2>
+
+<textarea id="text" rows="5" cols="50" placeholder="Enter your script..."></textarea><br><br>
+
+<select id="lang">
+  <option value="en">English</option>
+  <option value="te">Telugu</option>
+</select><br><br>
+
+<input type="file" id="file"><br><br>
+
+<button onclick="generate()">Generate Voice</button>
+
+<p id="status"></p>
+
+<audio id="player" controls style="display:none;"></audio><br>
+
+<a id="download" style="display:none; color:lightgreen;">Download Audio</a>
+
+<script>
+async function generate() {
+  let text = document.getElementById("text").value;
+  let lang = document.getElementById("lang").value;
+  let file = document.getElementById("file").files[0];
+
+  if (!text) {
+    alert("Enter text first");
+    return;
+  }
+
+  document.getElementById("status").innerText = "Processing...";
+
+  let formData = new FormData();
+  formData.append("text", text);
+  formData.append("language", lang);
+
+  if (file) formData.append("file", file);
+
+  try {
+    let res = await fetch("http://127.0.0.1:8000/generate", {
+      method: "POST",
+      body: formData
+    });
+
+    let blob = await res.blob();
+    let url = URL.createObjectURL(blob);
+
+    document.getElementById("status").innerText = "Done ✅";
+
+    let player = document.getElementById("player");
+    player.src = url;
+    player.style.display = "block";
+
+    let link = document.getElementById("download");
+    link.href = url;
+    link.style.display = "block";
+    link.download = "output.wav";
+
+  } catch (error) {
+    document.getElementById("status").innerText = "Error ❌";
+    console.error(error);
+  }
+}
+</script>
+
+</body>
+</html>
